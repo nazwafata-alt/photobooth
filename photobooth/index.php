@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Photo Booth</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="hero">
+
+            <!-- BAGIAN LOGO HURUF L ADA BINTANGNYA -->
+            <div class="logo" style="font-weight: bold; font-family: 'Georgia', serif;">
+                <span style="font-size: 0.5em; vertical-align: middle; color: #ffd700;">✨</span>LM<span style="font-size: 0.5em; vertical-align: middle; color: #ffd700;">✨</span>
+            </div>
+
+            <h1>PHOTO BOOTH</h1>
+
+            <p class="subtitle">
+                Abadikan momen terbaikmu bersama kami
+            </p>
+
+            <div class="card">
+
+                <h2>Siap untuk berfoto?</h2>
+
+                <p>
+                    Ambil beberapa foto, pilih frame favorit,
+                    dan simpan hasil fotomu.
+                </p>
+
+                <a href="kamera.php" class="btn-start">
+                    📷 MULAI FOTO
+                </a>
+
+            </div>
+
+            <p class="footer-text">
+                © 2026 Photo Booth
+            </p>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
