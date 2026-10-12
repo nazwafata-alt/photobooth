@@ -1,0 +1,542 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Photo Booth - Kamera</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .camera-page {
+            width: 100%;
+            max-width: 1000px;
+            margin: auto;
+            text-align: center;
+            padding: 30px 15px;
+        }
+
+        .camera-title {
+            font-size: 38px;
+            margin-bottom: 8px;
+        }
+
+        .camera-subtitle {
+            margin-bottom: 25px;
+            opacity: .8;
+        }
+
+        .camera-box {
+            position: relative;
+            width: 100%;
+            max-width: 850px;
+            margin: auto;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,.35);
+        }
+
+        #video {
+            width: 100%;
+            display: block;
+            transform: scaleX(-1);
+            min-height: 250px;
+            object-fit: cover;
+        }
+
+        .countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 5px 20px rgba(0,0,0,.8);
+            display: none;
+            z-index: 5;
+        }
+
+        .photo-counter {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        #photoCount {
+            color: #ff4fa3;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: rgba(255,255,255,.1);
+            max-width: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .camera-page .btn {
+            border: none;
+            padding: 13px 22px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: .2s;
+        }
+
+        .camera-page .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .camera-page .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-camera {
+            background: white;
+            color: #35145f;
+        }
+
+        .btn-start {
+            background: #ff4fa3;
+            color: white;
+        }
+
+        .btn-back {
+            background: rgba(255,255,255,.15);
+            color: white;
+        }
+
+        .result {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .photo-item {
+            background: rgba(255,255,255,.1);
+            padding: 10px;
+            border-radius: 15px;
+            min-width: 0;
+        }
+
+        .photo-item img {
+            width: 100%;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .photo-label {
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 9px 14px;
+            margin-top: 5px;
+            background: #ff4fa3;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .next {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .next a {
+            display: inline-block;
+            padding: 14px 25px;
+            background: white;
+            color: #35145f;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .error-message {
+            color: #ff4fa3;
+            margin: 15px auto;
+            max-width: 600px;
+        }
+
+        @media (max-width: 600px) {
+            .camera-title {
+                font-size: 28px;
+            }
+
+            .countdown {
+                font-size: 70px;
+            }
+
+            .photo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <main class="camera-page">
+
+            <h1 class="camera-title">📸 PHOTO BOOTH</h1>
+
+            <p class="camera-subtitle">
+                Siapkan pose terbaikmu!
+            </p>
+
+            <div class="camera-box">
+                <video
+                    id="video"
+                    autoplay
+                    muted
+                    playsinline
+                ></video>
+
+                <div id="countdown" class="countdown"></div>
+            </div>
+
+            <canvas id="canvas"></canvas>
+
+            <div class="photo-counter">
+                Foto <span id="photoCount">0</span> / 4
+            </div>
+
+            <div id="status" class="status" role="status" aria-live="polite">
+                Kamera belum dinyalakan
+            </div>
+
+            <p id="errorMessage" class="error-message"></p>
+
+            <div class="controls">
+                <button id="cameraButton" class="btn btn-camera" type="button">
+                    📷 Nyalakan Kamera
+                </button>
+
+                <button
+                    id="startButton"
+                    class="btn btn-start"
+                    type="button"
+                    disabled
+                >
+                    📸 Mulai Photobooth
+                </button>
+
+                <button
+                    id="stopButton"
+                    class="btn btn-back"
+                    type="button"
+                    disabled
+                >
+                    ⏹ Matikan Kamera
+                </button>
+
+                <a href="index.html" class="btn btn-back">
+                    ← Kembali
+                </a>
+            </div>
+
+            <section id="result" class="result">
+                <h2>✨ Hasil Foto</h2>
+                <p>Unduh foto yang kamu inginkan.</p>
+                <div id="photoGrid" class="photo-grid"></div>
+            </section>
+
+            <div id="next" class="next">
+                <a href="hasil.html">
+                    🖼️ Lanjut Pilih Frame
+                </a>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        "use strict";
+
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const cameraButton = document.getElementById("cameraButton");
+        const startButton = document.getElementById("startButton");
+        const stopButton = document.getElementById("stopButton");
+
+        const countdown = document.getElementById("countdown");
+        const status = document.getElementById("status");
+        const errorMessage = document.getElementById("errorMessage");
+
+        const photoCount = document.getElementById("photoCount");
+        const result = document.getElementById("result");
+        const photoGrid = document.getElementById("photoGrid");
+        const next = document.getElementById("next");
+
+        const TOTAL_PHOTOS = 4;
+        const COUNTDOWN_TIME = 3;
+
+        let stream = null;
+        let photos = [];
+        let isTakingPhotos = false;
+
+        function setStatus(message) {
+            status.textContent = message;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function startCamera() {
+            showError("");
+
+            if (!navigator.mediaDevices ||
+                !navigator.mediaDevices.getUserMedia) {
+                showError(
+                    "Browser tidak mendukung akses kamera. Buka website menggunakan HTTPS dan browser terbaru."
+                );
+                return;
+            }
+
+            cameraButton.disabled = true;
+            setStatus("Meminta izin kamera...");
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "user",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+                await video.play();
+
+                setStatus("✅ Kamera siap digunakan");
+                startButton.disabled = false;
+                stopButton.disabled = false;
+                cameraButton.textContent = "✅ Kamera Aktif";
+            } catch (error) {
+                console.error("Kamera gagal dibuka:", error);
+
+                cameraButton.disabled = false;
+
+                if (error.name === "NotAllowedError") {
+                    showError(
+                        "Izin kamera ditolak. Izinkan akses kamera melalui pengaturan browser."
+                    );
+                } else if (error.name === "NotFoundError") {
+                    showError("Kamera tidak ditemukan pada perangkat ini.");
+                } else {
+                    showError(
+                        "Kamera tidak dapat dibuka. Periksa izin browser dan pastikan kamera tidak sedang dipakai aplikasi lain."
+                    );
+                }
+
+                setStatus("❌ Kamera belum dapat digunakan");
+            }
+        }
+
+        function countdownFoto(nomor) {
+            return new Promise(resolve => {
+                let angka = COUNTDOWN_TIME;
+
+                countdown.style.display = "block";
+                countdown.textContent = angka;
+
+                setStatus(
+                    "Foto " + nomor + " dari " + TOTAL_PHOTOS
+                );
+
+                const timer = setInterval(() => {
+                    angka--;
+
+                    if (angka > 0) {
+                        countdown.textContent = angka;
+                    } else {
+                        clearInterval(timer);
+                        countdown.textContent = "📸";
+
+                        setTimeout(() => {
+                            countdown.style.display = "none";
+                            resolve();
+                        }, 400);
+                    }
+                }, 1000);
+            });
+        }
+
+        function ambilFoto(nomor) {
+            const width = video.videoWidth;
+            const height = video.videoHeight;
+
+            if (!width || !height) {
+                throw new Error(
+                    "Ukuran kamera belum tersedia. Coba nyalakan kamera lagi."
+                );
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Membuat hasil foto mirror seperti tampilan selfie.
+            ctx.save();
+            ctx.translate(width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, width, height);
+            ctx.restore();
+
+            const foto = canvas.toDataURL("image/jpeg", 0.90);
+
+            photos.push(foto);
+            photoCount.textContent = photos.length;
+
+            tampilkanFoto(foto, nomor);
+        }
+
+        function tampilkanFoto(foto, nomor) {
+            const item = document.createElement("div");
+            item.className = "photo-item";
+
+            const img = document.createElement("img");
+            img.src = foto;
+            img.alt = "Hasil foto " + nomor;
+
+            const label = document.createElement("div");
+            label.className = "photo-label";
+            label.textContent = "Foto " + nomor;
+
+            const download = document.createElement("a");
+            download.className = "download-btn";
+            download.href = foto;
+            download.download = "photobooth-" + nomor + ".jpg";
+            download.textContent = "⬇ Unduh Foto";
+
+            item.appendChild(img);
+            item.appendChild(label);
+            item.appendChild(download);
+
+            photoGrid.appendChild(item);
+            result.style.display = "block";
+        }
+
+        async function mulaiPhotobooth() {
+            if (isTakingPhotos || !stream) {
+                return;
+            }
+
+            isTakingPhotos = true;
+            startButton.disabled = true;
+            cameraButton.disabled = true;
+            showError("");
+
+            photos = [];
+            photoGrid.replaceChildren();
+            photoCount.textContent = "0";
+            result.style.display = "none";
+            next.style.display = "none";
+
+            try {
+                for (let i = 1; i <= TOTAL_PHOTOS; i++) {
+                    if (!stream) {
+                        throw new Error("Kamera telah dimatikan.");
+                    }
+
+                    await countdownFoto(i);
+                    ambilFoto(i);
+                    await delay(700);
+                }
+
+                // Simpan salinan foto di browser perangkat.
+                try {
+                    localStorage.setItem(
+                        "photoboothPhotos",
+                        JSON.stringify(photos)
+                    );
+                } catch (storageError) {
+                    console.warn(
+                        "Foto tidak dapat disimpan di penyimpanan browser:",
+                        storageError
+                    );
+
+                    showError(
+                        "Foto berhasil dibuat, tetapi penyimpanan browser penuh. Unduh foto agar tidak hilang."
+                    );
+                }
+
+                setStatus("🎉 Semua foto berhasil diambil!");
+                next.style.display = "block";
+            } catch (error) {
+                console.error(error);
+                showError(error.message || "Gagal mengambil foto.");
+                setStatus("Pengambilan foto tidak selesai.");
+            } finally {
+                isTakingPhotos = false;
+                startButton.disabled = !stream;
+                cameraButton.disabled = Boolean(stream);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            video.srcObject = null;
+
+            cameraButton.disabled = false;
+            cameraButton.textContent = "📷 Nyalakan Kamera";
+            startButton.disabled = true;
+            stopButton.disabled = true;
+
+            countdown.style.display = "none";
+            setStatus("Kamera dimatikan");
+        }
+
+        cameraButton.addEventListener("click", startCamera);
+        startButton.addEventListener("click", mulaiPhotobooth);
+        stopButton.addEventListener("click", stopCamera);
+
+        window.addEventListener("pagehide", stopCamera);
+    </script>
+</body>
+</html>
+```
